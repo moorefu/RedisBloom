@@ -1238,13 +1238,20 @@ int RedisModule_OnLoad(RedisModuleCtx *ctx, RedisModuleString **argv, int argc) 
             } else {
                 BFDefaultErrorRate = d;
             }
+            
         } else if (!rsStrcasecmp(argv[ii], "cf_max_expansions")) {
             long long l;
             if (RedisModule_StringToLongLong(argv[ii + 1], &l) == REDISMODULE_ERR || l <= 0) {
                 BAIL("Invalid argument for 'CF_MAX_EXPANSIONS'");
             }
             CFMaxExpansions = l;
-        } else {
+        } else if (!rsStrcasecmp(argv[ii], "cf_initial_size")) {
+            long long l;
+            if (RedisModule_StringToLongLong(argv[ii + 1], &l) == REDISMODULE_ERR || l <= 0) {
+                BAIL("Invalid argument for 'CF_INITIAL_SIZE'");
+            }
+            CFDefaultInitCapacity = l;
+        }  else {
             BAIL("Unrecognized option");
         }
     }
