@@ -799,10 +799,12 @@ static int CFScanDump_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **argv
 
     // Start
     if (pos == 0) {
-        CFHeader header;
+        CFHeader * header;
+        header = RedisModule_Alloc(sizeof(CFHeader)+cf->numFilters*sizeof(*header->filtersNumBucket));
         fillCFHeader(&header, cf);
         RedisModule_ReplyWithLongLong(ctx, 1);
-        RedisModule_ReplyWithStringBuffer(ctx, (const char *)&header, sizeof header);
+        RedisModule_ReplyWithStringBuffer(ctx, (const char *)&header, sizeof(CFHeader)+cf->numFilters*sizeof(uint32_t));
+        RedisModule_Free(header);
         return REDISMODULE_OK;
     }
 
@@ -840,7 +842,7 @@ static int CFLoadChunk_RedisCommand(RedisModuleCtx *ctx, RedisModuleString **arg
     if (pos == 1) {
         if (status != SB_EMPTY) {
             return RedisModule_ReplyWithError(ctx, statusStrerror(status));
-        } else if (bloblen != sizeof(CFHeader)) {
+        } else if (bloblen <= sizeof(CFHeader)) {
             return RedisModule_ReplyWithError(ctx, "Invalid header");
         }
 
